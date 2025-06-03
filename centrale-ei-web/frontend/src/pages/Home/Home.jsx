@@ -14,6 +14,7 @@ function Home() {
   return (
     <div className={`App ${bgStyles[styleIndex]}`}>
       <header className="App-header">
+        <a href="/register">S'inscrire</a>
 
         <button
           onClick={() => setStyleIndex((styleIndex + 1) % bgStyles.length)}

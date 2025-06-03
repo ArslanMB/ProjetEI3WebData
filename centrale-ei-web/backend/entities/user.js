@@ -1,19 +1,28 @@
-import typeorm from 'typeorm';
+import { EntitySchema } from 'typeorm';
 
-const User = new typeorm.EntitySchema({
+export const User = new EntitySchema({
   name: 'User',
+  tableName: 'users',
   columns: {
     id: {
       primary: true,
-      type: Number,
+      type: 'int',
       generated: true,
     },
-    email: {
-      type: String,
+    pseudo: {
+      type: 'varchar',
       unique: true,
     },
-    firstname: { type: String },
-    lastname: { type: String },
+    email: {
+      type: 'varchar',
+      unique: true,
+    },
+    birthYear: {
+      type: 'int',
+    },
+    password: {
+      type: 'varchar',
+    },
   },
 });
 
