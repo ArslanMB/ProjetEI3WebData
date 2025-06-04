@@ -1,5 +1,6 @@
 import { EntitySchema } from 'typeorm';
 
+
 export const Movie = new EntitySchema({
   name: 'Movie',
   tableName: 'movies',
@@ -14,6 +15,26 @@ export const Movie = new EntitySchema({
     },
     release_date: {
       type: 'text',
+    },
+    poster_path: {
+      type: 'varchar',
+      nullable: true,
+    },
+    overview: {
+      type: 'text',
+      nullable: true,
+    },
+    runtime: {
+      type: 'int',
+      nullable: true,
+    },
+    popularity: {
+      type: 'float',
+      nullable: true,
+    },
+    genres: {
+      type: 'text',
+      nullable: true,
     },
   },
 });
