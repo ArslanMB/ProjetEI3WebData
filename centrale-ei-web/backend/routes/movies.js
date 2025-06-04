@@ -3,17 +3,17 @@ import { appDataSource } from '../datasource.js';
 import { Movie } from '../entities/movie.js';
 
 const moviesRouter = express.Router();
-const movieRepository = appDataSource.getRepository('Movie');
+
 
 
 // ➤ GET /movies : renvoie tous les films
 moviesRouter.get('/', async (req, res) => {
   try {
-    const movies = await appDataSource.getRepository(Movie).find();
-    res.status(200).json({ movies });
+    const movieRepository = appDataSource.getRepository(Movie);
+    const movies = await movieRepository.find();
+    res.status(200).json(movies);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Erreur lors de la récupération des films' });
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 });
 
@@ -25,13 +25,14 @@ moviesRouter.get('/:id', async (req, res) => {
   }
 
   try {
+    const movieRepository = appDataSource.getRepository(Movie);
     const movie = await movieRepository.findOneBy({ id });
 
     if (!movie) {
       return res.status(404).json({ message: 'Film non trouvé' });
     }
 
-    return res.status(200).json(movie);
+    return res.status(200).json(movie); // JSON direct du film
   } catch (err) {
     return res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }

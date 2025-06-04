@@ -8,23 +8,14 @@ export function useFetchMovies(currentPage) {
   useEffect(() => {
     setMoviesLoadingError(null);
 
-    const options = {
-      method: 'GET',
-      url: `https://api.themoviedb.org/3/movie/popular?language=fr-FR&page=${currentPage}`,
-      headers: {
-        accept: 'application/json',
-        Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZjlmNjAwMzY4MzMzODNkNGIwYjNhNzJiODA3MzdjNCIsInN1YiI6IjY0NzA5YmE4YzVhZGE1MDBkZWU2ZTMxMiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Em7Y9fSW94J91rbuKFjDWxmpWaQzTitxRKNdQ5Lh2Eo'
-      }
-    };
-
     axios
-      .request(options)
+      .get('http://localhost:8000/movies') // ← appel à ton backend local
       .then((response) => {
-        setMovies(response.data.results);
+        setMovies(response.data); // ← doit être un tableau de films [{ id, title, ... }]
       })
       .catch((error) => {
-        setMoviesLoadingError('Problème de chargement');
         console.error(error);
+        setMoviesLoadingError('Erreur lors du chargement des films');
       });
   }, [currentPage]);
 

@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import { useState } from 'react';
 import { useFetchMovies } from './useFetchMovies';
 import Movie from '../../components/Movie';
+import { Link } from 'react-router-dom';
 
 function Home({ user }) {
   const [movieName, setMovieName] = useState('');
@@ -43,12 +44,15 @@ function Home({ user }) {
 
         <div className="movie-grid">
           {movies
-            .filter((movie) =>
-              movie.title.toLowerCase().includes(movieName.toLowerCase())
-            )
-            .map((movie) => (
-              <Movie key={movie.id} movie={movie} />
-            ))}
+            .filter((movie) => movie.title.toLowerCase().includes(movieName.toLowerCase()))
+            .map((movie) => {
+              console.log("Film:", movie);
+              return (
+                <Link key={movie.id} to={`/movies/${movie.id}`}>
+                  <Movie movie={movie} />
+                </Link>
+              );
+            })}
         </div>
       </header>
       <div 

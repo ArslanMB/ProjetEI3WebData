@@ -8,6 +8,8 @@ import Counter from './pages/Counter/Counter';
 import Users from './pages/Users/Users';
 import Register from "./pages/Register/Register"; 
 import Login from './pages/Login/Login.jsx';
+import MovieDetails from './pages/MovieDetails/MovieDetails.jsx';
+
 
 function App() {
   const [user, setUser] = useState(null); // état de connexion
@@ -21,6 +23,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={setUser} />} />
+        <Route path="/movies/:id" element={<MovieDetails user={user} />} />
       </Routes>
     </Layout>
   );
