@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useFetchMovies } from './useFetchMovies';
 import Movie from '../../components/Movie';
 
-function Home() {
+function Home({ user }) {
   const [movieName, setMovieName] = useState('');
   const [styleIndex, setStyleIndex] = useState(0);
   const bgStyles = ['bg-glass', 'bg-zoom', 'bg-polaroid', 'bg-dark'];
@@ -14,8 +14,14 @@ function Home() {
   return (
     <div className={`App ${bgStyles[styleIndex]}`}>
       <header className="App-header">
-        <a href="/register">S'inscrire</a>
-
+        {user ? (
+          <p>Bonjour, {user.username} !</p>
+        ) : (
+          <>
+            <a href="/register">S'inscrire</a>
+            <a href="/login" style={{ marginLeft: '20px' }}>Se connecter</a>
+          </>
+        )}
         <button
           onClick={() => setStyleIndex((styleIndex + 1) % bgStyles.length)}
           style={{ margin: '20px', padding: '10px 20px', fontSize: '16px' }}

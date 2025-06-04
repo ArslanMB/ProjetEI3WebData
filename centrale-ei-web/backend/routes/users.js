@@ -44,4 +44,33 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return res.status(400).json({ message: 'Email et mot de passe requis.' });
+
+  const userRepo = appDataSource.getRepository(User);
+
+  const user = await userRepo.findOneBy({ email });
+
+  if (!user)
+    return res.status(401).json({ message: 'Email ou mot de passe invalide.' });
+
+  const hashed = crypto.createHash('sha256').update(password).digest('hex');
+
+  if (user.passwordHash !== hashed)
+    return res.status(401).json({ message: 'Email ou mot de passe invalide.' });
+
+  // Ici on retourne l'utilisateur (ou un token si tu veux ajouter JWT plus tard)
+  return res.status(200).json({
+    message: 'Connexion réussie.',
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    },
+  });
+});
+
 export default router;
