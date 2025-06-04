@@ -3,17 +3,43 @@ import { appDataSource } from '../datasource.js';
 import { Movie } from '../entities/movie.js';
 
 const moviesRouter = express.Router();
+const movieRepository = appDataSource.getRepository('Movie');
 
 
 
 // ➤ GET /movies : renvoie tous les films
 moviesRouter.get('/', async (req, res) => {
+  const page = parseInt(req.query.page || '1');
+  const limit = parseInt(req.query.limit || '20');
+  const skip = (page - 1) * limit;
+
   try {
-    const movieRepository = appDataSource.getRepository(Movie);
-    const movies = await movieRepository.find();
-    res.status(200).json(movies);
+    const [movies, total] = await movieRepository.findAndCount({
+      skip,
+      take: limit,
+      order: { id: 'ASC' },
+    });
+
+    res.status(200).json({ movies, total });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur serveur' });
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des films' });
+  }
+});
+
+moviesRouter.get('/search', async (req, res) => {
+  const q = req.query.q?.toLowerCase() || '';
+  try {
+    const movieRepository = appDataSource.getRepository('Movie');
+    const movies = await movieRepository
+      .createQueryBuilder('movie')
+      .where('LOWER(movie.title) LIKE :q', { q: `%${q}%` })
+      .getMany();
+
+    res.status(200).json({ movies });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur de recherche' });
   }
 });
 
@@ -61,5 +87,7 @@ moviesRouter.post('/new', async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de l’ajout du film' });
   }
 });
+
+
 
 export default moviesRouter;
