@@ -9,6 +9,8 @@ import Users from './pages/Users/Users';
 import Register from "./pages/Register/Register"; 
 import Login from './pages/Login/Login.jsx';
 import MovieDetails from './pages/MovieDetails/MovieDetails.jsx';
+import Dashboard from './pages/Dashboard/Dashboard.jsx'; 
+
 
 
 function App() {
@@ -24,6 +26,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login onLogin={setUser} />} />
         <Route path="/movies/:id" element={<MovieDetails user={user} />} />
+        <Route path="/dashboard" element={<Dashboard user={user} />} />
       </Routes>
     </Layout>
   );

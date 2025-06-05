@@ -73,4 +73,24 @@ router.post('/login', async (req, res) => {
   });
 });
 
+router.get('/:id/reviews', async (req, res) => {
+  const userId = parseInt(req.params.id);
+  try {
+    const reviewRepository = appDataSource.getRepository('Review');
+    const reviews = await reviewRepository.find({
+      where: { userId },
+      relations: ['movie'],
+      order: { id: 'DESC' },
+    });
+
+    const average =
+      reviews.reduce((sum, r) => sum + r.rating, 0) / (reviews.length || 1);
+
+    res.status(200).json({ reviews, average });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur lors du chargement des avis utilisateur.' });
+  }
+});
+
 export default router;

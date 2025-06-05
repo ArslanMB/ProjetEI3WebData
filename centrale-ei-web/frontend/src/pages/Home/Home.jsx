@@ -14,6 +14,23 @@ function Home({ user }) {
   return (
     <div className={`App`}>
       <header className="App-header">
+        {user && (
+          <Link to="/dashboard">
+            <button
+              style={{
+                margin: '10px',
+                padding: '10px 20px',
+                fontSize: '16px',
+                backgroundColor: '#61dafb',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              Aller au Dashboard
+            </button>
+          </Link>
+        )}       
         {user ? (
           <p>Bonjour, {user.username} !</p>
         ) : (
