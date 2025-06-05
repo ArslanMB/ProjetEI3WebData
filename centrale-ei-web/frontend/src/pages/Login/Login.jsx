@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './Login.css'; // pour les styles si tu veux séparer
 
 export default function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // ← hook de navigation
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -15,21 +16,36 @@ export default function Login({ onLogin }) {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:8000/users/login', form);
-      onLogin(res.data.user);         // mise à jour de l'utilisateur connecté
-      navigate('/');                  // ← redirection vers la page d'accueil
+      onLogin(res.data.user);
+      navigate('/');
     } catch (err) {
       setMessage(err.response?.data?.message || 'Erreur serveur');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Connexion</h2>
-      <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-      <input type="password" name="password" placeholder="Mot de passe" onChange={handleChange} required />
-      <button type="submit">Se connecter</button>
-      <p>{message}</p>
-    </form>
+    <div className="login-container">
+      <form onSubmit={handleSubmit} className="login-form">
+        <h2>Connexion</h2>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Mot de passe"
+          value={form.password}
+          onChange={handleChange}
+          required
+        />
+        <button type="submit">Se connecter</button>
+        {message && <p className="error-message">{message}</p>}
+      </form>
+    </div>
   );
 }
-
