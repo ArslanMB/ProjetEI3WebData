@@ -1,5 +1,5 @@
 import { EntitySchema } from 'typeorm';
-
+import Review from './review.js';
 
 export const Movie = new EntitySchema({
   name: 'Movie',
@@ -35,6 +35,15 @@ export const Movie = new EntitySchema({
     genres: {
       type: 'text',
       nullable: true,
+    },
+  },
+  relations: {
+    reviews: {
+      type: 'one-to-many',
+      target: 'Review',
+      inverseSide: 'movie',
+      cascade: true,
+      eager: false, // tu peux garder false si tu préfères charger manuellement
     },
   },
 });

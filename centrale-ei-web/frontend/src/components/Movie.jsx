@@ -8,7 +8,6 @@ function Movie({ movie, styleClass }) {
     <div className={`movie-card ${styleClass}`}>
       <img src={imageUrl} alt={title} />
       <h3>{title}</h3>
-      <p>{release_date}</p>
     </div>
   );
 }

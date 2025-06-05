@@ -16,7 +16,7 @@ export default function MovieDetails({ user }) {
   const fetchMovie = async () => {
     try {
       const res = await axios.get(`http://localhost:8000/movies/${id}`);
-      const movieData = res.data.movie || res.data;
+      const movieData = res.data;
       setMovie(movieData);
 
       if (movieData.reviews && user) {

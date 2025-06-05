@@ -44,8 +44,7 @@ moviesRouter.get('/search', async (req, res) => {
 });
 
 moviesRouter.get('/:id', async (req, res) => {
-  const id = parseInt(req.params.id);
-  relations: ['reviews', 'reviews.user']
+  const id = parseInt(req.params.id, 10);
 
   if (isNaN(id)) {
     return res.status(400).json({ message: 'ID invalide' });
@@ -53,17 +52,23 @@ moviesRouter.get('/:id', async (req, res) => {
 
   try {
     const movieRepository = appDataSource.getRepository(Movie);
-    const movie = await movieRepository.findOneBy({ id });
+    const movie = await movieRepository.findOne({
+      where: { id },
+      relations: ['reviews', 'reviews.user'], 
+    });
 
     if (!movie) {
       return res.status(404).json({ message: 'Film non trouvé' });
     }
 
-    return res.status(200).json(movie); // JSON direct du film
+    return res.status(200).json(movie);
   } catch (err) {
+    console.error('Erreur dans /movies/:id →', err);
     return res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 });
+
+
 
 // ➤ POST /movies/new : ajoute un film
 moviesRouter.post('/new', async (req, res) => {
