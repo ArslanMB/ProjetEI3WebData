@@ -3,7 +3,9 @@ node_modules
 
 # local env files
 .env
+.vscode
 public
+__pycache__
 
 # database
 database.sqlite3

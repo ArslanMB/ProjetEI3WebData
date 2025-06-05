@@ -23,7 +23,9 @@ router.post('/', async (req, res) => {
     const movie = await movieRepo.findOneBy({ id: movieId });
 
     if (!user || !movie) {
-      return res.status(404).json({ message: 'Utilisateur ou film introuvable.' });
+      return res
+        .status(404)
+        .json({ message: 'Utilisateur ou film introuvable.' });
     }
 
     const newReview = reviewRepo.create({
@@ -55,6 +57,26 @@ router.get('/movie/:movieId', async (req, res) => {
       },
     });
 
+    res.json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+});
+
+// GET: avis pour un utilisateur
+router.get('/user/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const reviewRepo = appDataSource.getRepository(Review);
+
+  try {
+    const reviews = await reviewRepo.find({
+      where: {
+        user: {
+          id: parseInt(userId),
+        },
+      },
+    });
     res.json(reviews);
   } catch (err) {
     console.error(err);
