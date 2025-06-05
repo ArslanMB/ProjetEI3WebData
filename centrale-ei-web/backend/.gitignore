@@ -8,4 +8,4 @@ public
 __pycache__
 
 # database
-database.sqlite3
+db.sqlite

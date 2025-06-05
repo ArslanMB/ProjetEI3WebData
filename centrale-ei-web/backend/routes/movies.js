@@ -27,6 +27,18 @@ moviesRouter.get('/', async (req, res) => {
   }
 });
 
+moviesRouter.get('/unlimited', async (req, res) => {
+  try {
+    const movies = await movieRepository.find({
+      order: { id: 'ASC' }
+    });
+    res.status(200).json({ movies, total: movies.length });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des films' });
+  }
+});
+
 moviesRouter.get('/search', async (req, res) => {
   const q = req.query.q?.toLowerCase() || '';
   try {

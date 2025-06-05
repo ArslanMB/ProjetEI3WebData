@@ -36,6 +36,7 @@ export const Movie = new EntitySchema({
       type: 'text',
       nullable: true,
     },
+
   },
   relations: {
     reviews: {
