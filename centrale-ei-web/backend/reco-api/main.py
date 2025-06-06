@@ -79,8 +79,12 @@ def cosine_similarity(a, b):
         return 0.0
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
+# @app.get("/recommendations/{user_id}/user-based", response_model=List[Recommendation])
+# def recommend_user_based(user_id: int, top_n: int = 5):
+#     return recommender.user_based_recommendations(user_id, top_n)
 
-@app.get("/recommendations/{user_id}")
+
+@app.get("/recommendations/{user_id}/content-based")
 async def get_recommendations(user_id: int) -> List[dict]:
     async with httpx.AsyncClient() as client:
         # 1. Récupérer toutes les reviews de l'utilisateur
@@ -120,16 +124,28 @@ async def get_recommendations(user_id: int) -> List[dict]:
 
 
         # 6. Pour chaque film non noté, calculer la somme des produits scalaires avec les films aimés
-        print(ldico_reco(all_movies, reviewed_movies, liked_vectors, all_genres))  # Debug: afficher les scores des films recommandés
-        print(list_reco(ldico_reco(all_movies, reviewed_movies, liked_vectors, all_genres)))
+        # print(ldico_reco(all_movies, reviewed_movies, liked_vectors, all_genres))  # Debug: afficher les scores des films recommandés
+        # print(list_reco(ldico_reco(all_movies, reviewed_movies, liked_vectors, all_genres)))
         list_triee= list_reco(ldico_reco(all_movies, reviewed_movies, liked_vectors, all_genres))
          # Debug: afficher le score du premier film
             
-       
-        print (list_triee)
+        scores = ldico_reco(all_movies, reviewed_movies, liked_vectors, all_genres)
+        # On crée un dict id->score pour accès rapide
+        id_to_score = {list(d.keys())[0]: list(d.values())[0] for d in scores}
         movie_dict = {m["id"]: m for m in all_movies}
-# Construit la liste recommended dans l'ordre de list_triee
-        recommended = [movie_dict[mid] for mid in list_triee if mid in movie_dict]
-        print(recommended)
-        # Correction : retourner la liste complète, pas seulement le premier film
-        return recommended
+        # recommended_ids dans l'ordre trié
+        recommended_ids = list_reco(scores)
+        # On construit la liste finale au bon format
+        recommended = [
+            {"movie_id": mid, "score": float(id_to_score[mid])}
+            for mid in recommended_ids if mid in movie_dict
+        ]
+        print(recommended[:5])
+        return recommended[:5]
+#         # print (list_triee)
+#         movie_dict = {m["id"]: m for m in all_movies}
+# # Construit la liste recommended dans l'ordre de list_triee
+#         recommended = [movie_dict[mid] for mid in list_triee if mid in movie_dict]
+#         print(recommended)
+#         # Correction : retourner la liste complète, pas seulement le premier film
+#         return recommended

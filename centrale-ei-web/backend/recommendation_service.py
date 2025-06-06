@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, Column, Integer, Float, String, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 DATABASE_URL = "sqlite:////Users/nabila/Desktop/TP EI/centrale-ei-web/backend/db.sqlite"
+  # Chemin vers la base de données SQLite
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -226,6 +227,10 @@ recommender = Recommender(engine)
 def recommend_user_based(user_id: int, top_n: int = 5):
     return recommender.user_based_recommendations(user_id, top_n)
 
-@app.get("/recommendations/{user_id}/content-based", response_model=List[Recommendation])
-def recommend_content_based(user_id: int, top_n: int = 5):
-    return recommender.content_based_recommendations(user_id, top_n)
+# @app.get("/recommendations/{user_id}/content-based", response_model=List[Recommendation])
+# def recommend_content_based(user_id: int, top_n: int = 5):
+#     return recommender.content_based_recommendations(user_id, top_n)
+
+
+
+
