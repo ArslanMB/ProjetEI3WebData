@@ -108,25 +108,44 @@ class Recommender:
 
     def user_based_recommendations(self, user_id: int, top_n: int = 5) -> List[Recommendation]:
         self.load_ratings()
+
         if user_id not in self.user_movie_matrix.index:
-            raise HTTPException(status_code=404, detail="User not found in ratings.")
+            raise HTTPException(status_code=404, detail=f"User {user_id} not found in ratings.")
+
         target_ratings = self.user_movie_matrix.loc[user_id]
         rated_movies = set(target_ratings[target_ratings.notna()].index.tolist())
-        raw_sims = self.user_movie_matrix.corrwith(target_ratings, axis=1, method="pearson")
+
+        if not rated_movies:
+            return self.get_popular_unseen(user_id, set(), top_n)
+
+        try:
+            raw_sims = self.user_movie_matrix.corrwith(target_ratings, axis=1, method="pearson")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Erreur de similarité : {str(e)}")
+
         user_similarities = raw_sims.dropna()
         user_similarities = user_similarities[user_similarities.index != user_id]
+
         if user_similarities.empty:
             return self.get_popular_unseen(user_id, rated_movies, top_n)
+
         user_similarities = user_similarities.sort_values(ascending=False)
         sim_users = user_similarities.index.tolist()
         sim_scores = user_similarities.values
+
         unseen_movies = [m for m in self.movie_ids if m not in rated_movies]
         movie_scores: Dict[int, float] = {}
-        for movie in unseen_movies:
-            movie_ratings = self.user_movie_matrix.loc[sim_users, movie]
+
+        for movie_id in unseen_movies:
+            try:
+                movie_ratings = self.user_movie_matrix.loc[sim_users, movie_id]
+            except KeyError:
+                continue
+
             rated_mask = ~movie_ratings.isna()
             if rated_mask.sum() == 0:
                 continue
+
             weights = sim_scores[rated_mask.values]
             ratings = movie_ratings[rated_mask].values
             denom = np.sum(np.abs(weights))
@@ -134,29 +153,33 @@ class Recommender:
                 continue
             score = np.dot(weights, ratings) / denom
             if not np.isnan(score):
-                movie_scores[movie] = float(score)
-        sorted_pairs = sorted(movie_scores.items(), key=lambda x: x[1], reverse=True)
-        recommendations: List[Recommendation] = []
-        for mid, sc in sorted_pairs[:top_n]:
-            recommendations.append(Recommendation(movie_id=mid, score=sc))
+                movie_scores[movie_id] = float(score)
+
+        sorted_scores = sorted(movie_scores.items(), key=lambda x: x[1], reverse=True)
+        recommendations: List[Recommendation] = [Recommendation(movie_id=mid, score=score)
+                                                  for mid, score in sorted_scores[:top_n]]
+
         if len(recommendations) < top_n:
             needed = top_n - len(recommendations)
             exclude = rated_movies.union({r.movie_id for r in recommendations})
             fallback = self.get_popular_unseen(user_id, exclude, needed)
             recommendations.extend(fallback)
+
         return recommendations[:top_n]
 
     def content_based_recommendations(self, user_id: int, top_n: int = 5) -> List[Recommendation]:
         self.load_ratings()
         self.load_content()
+
         if user_id not in self.user_movie_matrix.index:
             raise HTTPException(status_code=404, detail="User not found in ratings.")
+
         target_ratings = self.user_movie_matrix.loc[user_id]
         rated_movies = set(target_ratings[target_ratings.notna()].index.tolist())
+
         if not rated_movies:
             return self.get_popular_unseen(user_id, rated_movies, top_n)
 
-        # Comptabiliser la fréquence des genres pour les films notés
         genre_counts: Dict[str, int] = {}
         for mid in rated_movies:
             genres_str_array = self.movies_df.loc[self.movies_df["id"] == mid, "genres"].values
@@ -170,11 +193,9 @@ class Recommender:
         if not genre_counts:
             return self.get_popular_unseen(user_id, rated_movies, top_n)
 
-        # Déterminer le(s) genre(s) le(s) plus fréquent(s)
         max_count = max(genre_counts.values())
         top_genres = {g for g, cnt in genre_counts.items() if cnt == max_count}
 
-        # Sélectionner tous les films non notés dont les genres contiennent au moins un genus principal
         candidates = []
         for _, row in self.movies_df.iterrows():
             mid = int(row["id"])
@@ -182,7 +203,6 @@ class Recommender:
                 continue
             genres_str = row["genres"] or ""
             movie_genres = {g.strip() for g in genres_str.split(",") if g.strip()}
-            # Calculez le nombre de genres correspondants avec top_genres
             common_genre_count = len(movie_genres.intersection(top_genres))
             if common_genre_count > 0:
                 candidates.append((mid, common_genre_count, float(row["popularity"] or 0.0)))
@@ -190,8 +210,6 @@ class Recommender:
         if not candidates:
             return self.get_popular_unseen(user_id, rated_movies, top_n)
 
-        # Trier d'abord par nombre de genres correspondants (décroissant),
-        # puis par popularité (décroissant) pour les égalités
         candidates_sorted = sorted(
             candidates,
             key=lambda x: (x[1], x[2]),
@@ -200,8 +218,7 @@ class Recommender:
 
         recommendations: List[Recommendation] = []
         for mid, genre_count, pop in candidates_sorted[:top_n]:
-            # Le score primaire est le nombre de genres correspondants, on peut combiner avec la popularité si voulu
-            score = float(genre_count)  # on garde ici count en score, car priorité au genre
+            score = float(genre_count)
             recommendations.append(Recommendation(movie_id=mid, score=score))
 
         if len(recommendations) < top_n:
@@ -220,6 +237,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 recommender = Recommender(engine)
 
 @app.get("/recommendations/{user_id}/user-based", response_model=List[Recommendation])

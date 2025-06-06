@@ -4,6 +4,8 @@ import axios from 'axios'
 import { useFetchMovies } from './useFetchMovies'
 import Movie from '../../components/Movie'
 import { Link } from 'react-router-dom'
+import rateflixLogo from './Rateflix.png';
+
 
 function Home({ user }) {
   const [movieName, setMovieName] = useState('')
@@ -50,7 +52,7 @@ function Home({ user }) {
         setUbLoading(false)
       })
       .catch(() => {
-        setUbError('Impossible de charger les recommandations.')
+        setUbError('Vous n\'avez pas encore de recommandations personnalisées.')
         setUbLoading(false)
       })
 
@@ -102,7 +104,12 @@ function Home({ user }) {
     <div className="App">
       <header className="stream-header">
         <div className="top-bar">
-          <h1 className="site-title">🎬 RateFlix</h1>
+          <img
+        src={rateflixLogo}
+        alt="RateFlix Logo"
+        className="site-logo"
+        style={{ height: '100px' }} 
+      />
           <div className="user-actions">
             {user ? (
               <>
