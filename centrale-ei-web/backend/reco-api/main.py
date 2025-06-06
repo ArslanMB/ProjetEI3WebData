@@ -20,7 +20,6 @@ def movie_to_vector(movie, all_genres):
             vec.append(0)
     return vec
 
-
 def genre_movie(movie):
     genres = movie["genres"]
     if isinstance(genres, str):
@@ -115,10 +114,6 @@ async def get_recommendations(user_id: int) -> List[dict]:
         liked_movies = [m for m in all_movies if m["id"] in liked_movie_ids]
         liked_vectors = [movie_to_vector(m, all_genres) for m in liked_movies]
        
-        # Affiche la liste des genres uniques
-        
-
-
 
         # ...après la construction de all_genres...
         all_movies_genres_vectors = genres_dict_for_movies(all_movies, all_genres)
@@ -130,17 +125,7 @@ async def get_recommendations(user_id: int) -> List[dict]:
         list_triee= list_reco(ldico_reco(all_movies, reviewed_movies, liked_vectors, all_genres))
          # Debug: afficher le score du premier film
             
-        # scores = defaultdict(float)
-        # for m in all_movies:
-        #     if m["id"] in liked_movie_ids:
-        #         continue  # On ne recommande pas les films déjà notés
-        #     v = movie_to_vector(m, all_genres)
-        #     # Score = somme des produits scalaires avec chaque film aimé
-        #     score = sum(np.dot(v, lv) for lv in liked_vectors)
-        #     if score > 0:
-        #         scores[m["id"]] = score
-
-        # 7. Trier les films par score décroissant
+       
         print (list_triee)
         movie_dict = {m["id"]: m for m in all_movies}
 # Construit la liste recommended dans l'ordre de list_triee
