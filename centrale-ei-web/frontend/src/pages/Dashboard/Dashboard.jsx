@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import rateflixLogo from '../Home/Rateflix.png';
+import './Dashboard.css';
 
 export default function Dashboard({ user }) {
   const [reviews, setReviews] = useState([]);
   const [average, setAverage] = useState(null);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -24,31 +27,58 @@ export default function Dashboard({ user }) {
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
-    <div style={{ padding: '2rem', color: 'white', background: 'linear-gradient(to right, #111 30%, #141e30 100%)', minHeight: '100vh' }}>
-      <h2>Bienvenue, {user.username}</h2>
-      <h3>Vous avez noté {reviews.length} film(s)</h3>
-      {average !== null && <p> Moyenne de vos notes : <strong>{average.toFixed(2)}</strong></p>}
+    <div className="dashboard-container">
+      <div style={{ position: 'relative', marginBottom: '2rem' }}>
+        <img
+          src={rateflixLogo}
+          alt="RateFlix Logo"
+          className="register-logo"
+          style={{ height: '90px', display: 'block', margin: '0 auto 1rem' }}
+        />
+        <button
+          className="btn"
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            margin: 0,
+            width: 180,
+            fontWeight: 600,
+            fontSize: '1rem'
+          }}
+          onClick={() => navigate('/')}
+        >
+          ← Retour à l'accueil
+        </button>
+      </div>
+      <h2 className="dashboard-subtitle">Bienvenue, {user.username}</h2>
+      <h3 className="dashboard-subtitle">Vous avez noté {reviews.length} film(s)</h3>
+      {average !== null && (
+        <p className="dashboard-average">
+          Moyenne de vos notes : <strong>{average.toFixed(2)}</strong>
+        </p>
+      )}
 
-      <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+      <ul className="dashboard-reviews-list">
         {reviews.map((r) => (
-          <li key={r.id} style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid #333', paddingBottom: '1rem' }}>
+          <li key={r.id} className="dashboard-review-item">
             {r.movie.poster_path && (
               <Link to={`/movies/${r.movie.id}`}>
                 <img
                   src={`https://image.tmdb.org/t/p/w200${r.movie.poster_path}`}
                   alt={r.movie.title}
-                  style={{ borderRadius: '8px', marginRight: '1rem', width: '100px' }}
+                  className="dashboard-movie-poster"
                 />
               </Link>
             )}
 
             <div>
-              <Link to={`/movies/${r.movie.id}`} style={{ color: '#61dafb', textDecoration: 'none', fontSize: '1.2rem' }}>
+              <Link to={`/movies/${r.movie.id}`} className="dashboard-movie-title">
                 🎬 <strong>{r.movie.title}</strong>
               </Link>
               <br />
               Note : {r.rating} / 5
-              {r.comment && <p style={{ fontStyle: 'italic', marginTop: '0.5rem' }}>"{r.comment}"</p>}
+              {r.comment && <p className="dashboard-comment">"{r.comment}"</p>}
             </div>
           </li>
         ))}
