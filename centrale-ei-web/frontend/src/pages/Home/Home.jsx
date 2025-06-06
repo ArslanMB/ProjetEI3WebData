@@ -1,101 +1,105 @@
-// src/pages/Home.jsx
-
-import './Home.css';
-import { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
-import { useFetchMovies } from './useFetchMovies';
-import Movie from '../../components/Movie';
-import { Link } from 'react-router-dom';
+import './Home.css'
+import { useState, useEffect, useMemo } from 'react'
+import axios from 'axios'
+import { useFetchMovies } from './useFetchMovies'
+import Movie from '../../components/Movie'
+import { Link } from 'react-router-dom'
 
 function Home({ user }) {
-  const [movieName, setMovieName] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [genreFilter, setGenreFilter] = useState('');
-  const [sortOption, setSortOption] = useState('');
-  const { movies, moviesLoadingError } = useFetchMovies(currentPage, movieName.trim());
+  const [movieName, setMovieName] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [genreFilter, setGenreFilter] = useState('')
+  const [sortOption, setSortOption] = useState('')
+  const { movies, moviesLoadingError } = useFetchMovies(currentPage, movieName.trim())
 
-  const [recommendations, setRecommendations] = useState([]);
-  const [recoLoading, setRecoLoading] = useState(true);
-  const [recoError, setRecoError] = useState('');
+  const [ubRecs, setUbRecs] = useState([])
+  const [ubLoading, setUbLoading] = useState(true)
+  const [ubError, setUbError] = useState('')
+
+  const [cbRecs, setCbRecs] = useState([])
+  const [cbLoading, setCbLoading] = useState(true)
+  const [cbError, setCbError] = useState('')
 
   useEffect(() => {
     if (!user) {
-      setRecommendations([]);
-      setRecoLoading(false);
-      setRecoError('');
-      return;
+      setUbRecs([])
+      setUbLoading(false)
+      setUbError('')
+      setCbRecs([])
+      setCbLoading(false)
+      setCbError('')
+      return
     }
 
-    setRecoLoading(true);
-    setRecoError('');
-
+    setUbLoading(true)
+    setUbError('')
     axios
       .get(`http://localhost:8001/recommendations/${user.id}/user-based?top_n=5`)
       .then((res) => {
-        const movieIds = res.data.map((r) => r.movie_id);
-        if (movieIds.length === 0) {
-          setRecommendations([]);
-          setRecoLoading(false);
-          return null;
+        const ids = res.data.map((r) => r.movie_id)
+        if (ids.length === 0) {
+          setUbRecs([])
+          setUbLoading(false)
+          return null
         }
-        return Promise.all(movieIds.map((id) => axios.get(`http://localhost:8000/movies/${id}`)));
+        return Promise.all(ids.map((id) => axios.get(`http://localhost:8000/movies/${id}`)))
       })
-      .then((resArr) => {
-        if (!resArr) return;
-        setRecommendations(resArr.map((r) => r.data));
-        setRecoLoading(false);
+      .then((arr) => {
+        if (!arr) return
+        setUbRecs(arr.map((r) => r.data))
+        setUbLoading(false)
       })
       .catch(() => {
-        setRecoError('Impossible de charger les recommandations.');
-        setRecoLoading(false);
-      });
-  }, [user]);
+        setUbError('Impossible de charger les recommandations.')
+        setUbLoading(false)
+      })
+
+    setCbLoading(true)
+    setCbError('')
+    axios
+      .get(`http://localhost:8001/recommendations/${user.id}/content-based?top_n=5`)
+      .then((res) => {
+        const ids = res.data.map((r) => r.movie_id)
+        if (ids.length === 0) {
+          setCbRecs([])
+          setCbLoading(false)
+          return null
+        }
+        return Promise.all(ids.map((id) => axios.get(`http://localhost:8000/movies/${id}`)))
+      })
+      .then((arr) => {
+        if (!arr) return
+        setCbRecs(arr.map((r) => r.data))
+        setCbLoading(false)
+      })
+      .catch(() => {
+        setCbError('Impossible de charger les recommandations.')
+        setCbLoading(false)
+      })
+  }, [user])
 
   const filteredAndSortedMovies = useMemo(() => {
-    if (!movies) return [];
-
+    if (!movies) return []
     let result = movies.filter((m) => {
-      if (!genreFilter.trim()) return true;
-      return (m.genres || '').toLowerCase().includes(genreFilter.trim().toLowerCase());
-    });
-
+      if (!genreFilter.trim()) return true
+      return (m.genres || '').toLowerCase().includes(genreFilter.trim().toLowerCase())
+    })
     if (sortOption === 'popularity') {
-      result.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+      result.sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
     } else if (sortOption === 'alpha') {
-      result.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      result.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
     } else if (sortOption === 'year') {
       result.sort((a, b) => {
-        const yearA = parseInt(a.release_date?.split('-')[0]) || 0;
-        const yearB = parseInt(b.release_date?.split('-')[0]) || 0;
-        return yearB - yearA;
-      });
+        const yearA = parseInt(a.release_date?.split('-')[0]) || 0
+        const yearB = parseInt(b.release_date?.split('-')[0]) || 0
+        return yearB - yearA
+      })
     }
-
-    return result;
-  }, [movies, genreFilter, sortOption]);
+    return result
+  }, [movies, genreFilter, sortOption])
 
   return (
     <div className="App">
-      {user && (
-        <section className="recommendations-section" style={{ padding: '2rem' }}>
-          <h2>Films recommandés pour vous</h2>
-          {recoLoading && <p>Chargement des recommandations...</p>}
-          {recoError && <p className="error-message">{recoError}</p>}
-          {!recoLoading && recommendations.length === 0 && !recoError && (
-            <p>Aucune recommandation disponible pour le moment.</p>
-          )}
-          {!recoLoading && recommendations.length > 0 && (
-            <div className="movie-grid">
-              {recommendations.map((movie) => (
-                <Link key={movie.id} to={`/movies/${movie.id}`}>
-                  <Movie movie={movie} />
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
       <header className="stream-header">
         <div className="top-bar">
           <h1 className="site-title">🎬 RateFlix</h1>
@@ -113,6 +117,47 @@ function Home({ user }) {
             )}
           </div>
         </div>
+              {user && (
+        <>
+          <section className="recommendations-section" style={{ padding: '2rem' }}>
+            <h2>Des utilisateurs aux goûts similaires ont adoré ce contenu</h2>
+            {ubLoading && <p>Chargement des recommandations...</p>}
+            {ubError && <p className="error-message">{ubError}</p>}
+            {!ubLoading && ubRecs.length === 0 && !ubError && (
+              <p>Aucune recommandation disponible pour le moment.</p>
+            )}
+            {!ubLoading && ubRecs.length > 0 && (
+              <div className="movie-grid">
+                {ubRecs.map((movie) => (
+                  <Link key={movie.id} to={`/movies/${movie.id}`}>
+                    <Movie movie={movie} />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="recommendations-section" style={{ padding: '2rem' }}>
+            <h2>Selon vos goûts, cette suggestion devrait vous plaire</h2>
+            {cbLoading && <p>Chargement des recommandations...</p>}
+            {cbError && <p className="error-message">{cbError}</p>}
+            {!cbLoading && cbRecs.length === 0 && !cbError && (
+              <p>Aucune recommandation disponible pour le moment.</p>
+            )}
+            {!cbLoading && cbRecs.length > 0 && (
+              <div className="movie-grid">
+                {cbRecs.map((movie) => (
+                  <Link key={movie.id} to={`/movies/${movie.id}`}>
+                    <Movie movie={movie} />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+
         <div className="search-section">
           <h2>Films populaires</h2>
           <input
@@ -120,8 +165,8 @@ function Home({ user }) {
             placeholder="Rechercher un film..."
             value={movieName}
             onChange={(e) => {
-              setMovieName(e.target.value);
-              setCurrentPage(1);
+              setMovieName(e.target.value)
+              setCurrentPage(1)
             }}
           />
         </div>
@@ -133,8 +178,8 @@ function Home({ user }) {
             placeholder="Entrez un genre (ex : Action)"
             value={genreFilter}
             onChange={(e) => {
-              setGenreFilter(e.target.value);
-              setCurrentPage(1);
+              setGenreFilter(e.target.value)
+              setCurrentPage(1)
             }}
             style={{
               padding: '6px 10px',
@@ -150,8 +195,8 @@ function Home({ user }) {
             id="sort"
             value={sortOption}
             onChange={(e) => {
-              setSortOption(e.target.value);
-              setCurrentPage(1);
+              setSortOption(e.target.value)
+              setCurrentPage(1)
             }}
             style={{
               padding: '6px 10px',
@@ -194,7 +239,7 @@ function Home({ user }) {
         </div>
       )}
     </div>
-  );
+  )
 }
 
-export default Home;
+export default Home
