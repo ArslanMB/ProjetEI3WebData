@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './Login.css'; // pour les styles si tu veux séparer
+import rateflixLogo from '../Home/Rateflix.png';
+import './Login.css';
 
 export default function Login({ onLogin }) {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -26,6 +27,7 @@ export default function Login({ onLogin }) {
   return (
     <div className="login-container">
       <form onSubmit={handleSubmit} className="login-form">
+        <img src={rateflixLogo} alt="RateFlix Logo" className="register-logo" style={{ margin: '0 auto 1rem', display: 'block' }} />
         <h2>Connexion</h2>
         <input
           type="email"
